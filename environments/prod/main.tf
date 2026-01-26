@@ -1,10 +1,9 @@
 # courm-terraform/main.tf
 
-# 1. VPC 모듈 호출 (엔진 장착)
+# 1. VPC 모듈 호출
 module "vpc" {
   source = "../../modules/vpc"
 
-  # 변수 전달 (terraform.tfvars에서 받은 값을 모듈로 넘김)
   environment    = var.environment
   vpc_cidr       = var.vpc_cidr
   azs            = var.azs
@@ -15,12 +14,13 @@ module "vpc" {
   data_subnets   = var.data_subnets
 }
 
-# 2. 보안 그룹 모듈 호출 (문짝 장착 - 테스트용으로 ALB 하나만 먼저)
+# 2. 보안 그룹 모듈 호출
 module "sg_alb" {
   source = "../../modules/security-groups"
 
   name   = "courm-sg-alb-${var.environment}"
-  vpc_id = module.vpc.vpc_id  # [핵심] 방금 만든 VPC 모듈의 ID를 가져와서 꽂음!
+  vpc_id = module.vpc.vpc_id
+  description = "ALB Security Group"
 
   ingress_rules = [
     {
@@ -30,4 +30,29 @@ module "sg_alb" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   ]
+
+  egress_rules = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+}
+
+# 3. ALB 모듈
+module "alb" {
+  source = "../../modules/alb"
+
+  vpc_id         = module.vpc.vpc_id
+  public_subnets = module.vpc.public_subnets
+
+  security_group_ids = [module.sg_alb.security_group_id]
+}
+
+# 4. API Gateway 모듈
+module "api_gateway" {
+  source = "../../modules/api-gateway"
+  alb_dns_name = module.alb.alb_dns_name
 }
