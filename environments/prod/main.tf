@@ -2,7 +2,7 @@
 
 # 1. VPC 모듈 호출 (엔진 장착)
 module "vpc" {
-  source = "./modules/vpc"
+  source = "../../modules/vpc"
 
   # 변수 전달 (terraform.tfvars에서 받은 값을 모듈로 넘김)
   environment    = var.environment
@@ -17,7 +17,7 @@ module "vpc" {
 
 # 2. 보안 그룹 모듈 호출 (문짝 장착 - 테스트용으로 ALB 하나만 먼저)
 module "sg_alb" {
-  source = "./modules/security-groups"
+  source = "../../modules/security-groups"
 
   name   = "courm-sg-alb-${var.environment}"
   vpc_id = module.vpc.vpc_id  # [핵심] 방금 만든 VPC 모듈의 ID를 가져와서 꽂음!
