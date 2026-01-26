@@ -1,26 +1,14 @@
-  # 1. ALB 전용 보안 그룹 (누구나 접속 가능)
-  resource "aws_security_group" "alb_sg" {
-    name        = "courm-alb-sg"
-    description = "Allow HTTP inbound traffic"
-    vpc_id      = var.vpc_id
+  # 1. ALB 전용 보안 그룹
+  resource "aws_lb" "main" {
+    name               = "courm-alb"
+    internal           = false
+    load_balancer_type = "application"
 
-    ingress {
-      description = "HTTP from Internet"
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    egress {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
+    security_groups    = var.security_group_ids
+    subnets            = var.public_subnets
 
     tags = {
-      Name = "courm-alb-sg"
+      Name = "courm-alb"
     }
   }
 
@@ -29,7 +17,7 @@
     name               = "courm-alb"
     internal           = false
     load_balancer_type = "application"
-    security_groups    = [aws_security_group.alb_sg.id]
+    security_groups    = var.security_group_ids
     subnets            = var.public_subnets
 
     tags = {
