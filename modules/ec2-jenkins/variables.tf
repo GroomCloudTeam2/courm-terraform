@@ -19,5 +19,5 @@ variable "key_name" {
 }
 
 variable "security_group_ids" {
-  description = "적용할 보안그룹 리스트" type = list(string)
+  description = "적용할 보안그룹 리스트"
 }
