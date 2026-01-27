@@ -22,7 +22,6 @@ module "sg_alb" {
 
   name   = "courm-sg-alb-${var.environment}"
   vpc_id = module.vpc.vpc_id
-  description = "ALB Security Group"
 
   ingress_rules = [
     {
@@ -203,3 +202,23 @@ module "jenkins" {
   security_group_ids = [module.sg_jenkins.security_group_id]
 }
 
+# Kafka 모듈 호출
+module "kafka" {
+  source = "../../modules/kafka"
+
+  environment  = var.environment
+  vpc_id       = module.vpc.vpc_id
+
+  # VPC 모듈에서 만든 MQ 서브넷 ID 리스트 전달
+  # (순서: [0]이 a존, [1]이 c존이라고 가정)
+  subnet_ids   = module.vpc.mq_subnet_ids
+
+  # Kafka에 접근할 ECS의 보안그룹 ID
+  # (ECS 서비스 만들 때 사용하는 보안그룹 ID를 넣으세요.
+  #  아직 모듈 분리가 안되어 있다면, 별도로 만든 ECS용 SG 리소스 ID를 넣어도 됩니다.)
+  ecs_security_group_id = module.sg_ecs.security_group_id
+
+  key_name      = var.key_pair_name
+  ami_id        = "ami-0c9c942bd7bf113a2" # 예: Ubuntu 22.04 (리전 확인 필수!)
+  instance_type = "t3.medium"
+}
