@@ -1,18 +1,18 @@
   # 1. ALB 전용 보안 그룹
 
 
-  # 2. 로드밸런서 (ALB) 생성
-  resource "aws_lb" "main" {
-    name               = "courm-alb"
-    internal           = false
-    load_balancer_type = "application"
-    security_groups    = var.security_group_ids
-    subnets            = var.public_subnets
+  # # 2. 로드밸런서 (ALB) 생성
+  # resource "aws_lb" "main" {
+  #   name               = "courm-alb"
+  #   internal           = false
+  #   load_balancer_type = "application"
+  #   security_groups    = var.security_group_ids
+  #   subnets            = var.public_subnets
 
-    tags = {
-      Name = "courm-alb"
-    }
-  }
+  #   tags = {
+  #     Name = "courm-alb"
+  #   }
+  # }
 
   # -----------------------------------------------------------
   # 3. 타겟 그룹 생성

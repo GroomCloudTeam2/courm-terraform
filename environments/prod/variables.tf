@@ -1,5 +1,11 @@
 # courm-terraform/variables.tf
 
+variable "project" {
+  description = "Project name"
+  type        = string
+  default     = "courm"
+}
+
 variable "environment" { type = string }
 variable "vpc_cidr" { type = string }
 variable "azs" { type = list(string) }
@@ -24,4 +30,3 @@ variable "rds_username" {
   type        = string
   default     = "admin"
 }
-
