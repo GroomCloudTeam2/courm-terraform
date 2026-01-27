@@ -15,3 +15,14 @@ output "vpc_id" {
   description = "생성된 VPC ID"
   value       = module.vpc.vpc_id
 }
+
+# 젠킨스 접속 정보
+output "jenkins_info" {
+  description = "젠킨스 접속 정보 모음"
+  value = {
+    # 모듈에서 public_ip를 내보내고 있어야 함
+    url         = "http://${module.jenkins.public_ip}:8080"
+    instance_id = module.jenkins.instance_id
+    private_ip  = module.jenkins.private_ip
+  }
+}
