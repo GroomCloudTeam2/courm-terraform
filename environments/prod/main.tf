@@ -66,8 +66,6 @@ module "internal_alb" {
   vpc_id             = module.vpc.vpc_id
   subnet_ids         = module.vpc.app_subnet_ids # 2개 AZ (ap-northeast-2a, 2c)
   security_group_ids = [module.sg_internal_alb.security_group_id]
-
-  default_target_group_arn = module.alb.target_group_arns["user"]
 }
 
 # 4. API Gateway 모듈
@@ -84,7 +82,7 @@ data "aws_ecr_repository" "payment" { name = "goorm-payment" }
 data "aws_ecr_repository" "cart" { name = "goorm-cart" }
 
 locals {
-  image_tag = "12-24b038e1"
+  image_tag = "10-78435b3f"
 
   # 서비스 간 통신용 Internal ALB DNS (Path 기반 라우팅)
   internal_alb_dns = module.internal_alb.dns_name
@@ -325,6 +323,7 @@ module "ecs_service_user" {
   cpu               = 256
   memory            = 512
   desired_count     = 1
+  health_check_grace_period = 600
 
   environment_variables = concat(
     [{ name = "SPRING_PROFILES_ACTIVE", value = var.environment }],
@@ -351,6 +350,7 @@ module "ecs_service_product" {
   container_image   = "${data.aws_ecr_repository.product.repository_url}:${local.image_tag}"
   container_port    = 8080
   desired_count     = 1
+  health_check_grace_period = 600
 
   environment_variables = concat(
     [{ name = "SPRING_PROFILES_ACTIVE", value = var.environment }],
@@ -377,6 +377,7 @@ module "ecs_service_order" {
   container_image   = "${data.aws_ecr_repository.order.repository_url}:${local.image_tag}"
   container_port    = 8080
   desired_count     = 1
+  health_check_grace_period = 600
 
   environment_variables = concat(
     [{ name = "SPRING_PROFILES_ACTIVE", value = var.environment }],
@@ -403,6 +404,7 @@ module "ecs_service_payment" {
   container_image   = "${data.aws_ecr_repository.payment.repository_url}:${local.image_tag}"
   container_port    = 8080
   desired_count     = 1
+  health_check_grace_period = 600
 
   environment_variables = concat(
     [{ name = "SPRING_PROFILES_ACTIVE", value = var.environment }],
@@ -429,6 +431,7 @@ module "ecs_service_cart" {
   container_image   = "${data.aws_ecr_repository.cart.repository_url}:${local.image_tag}"
   container_port    = 8080
   desired_count     = 1
+  health_check_grace_period = 600
 
   environment_variables = concat(
     [{ name = "SPRING_PROFILES_ACTIVE", value = var.environment }],
@@ -440,16 +443,22 @@ module "ecs_service_cart" {
 # 7. CodeDeploy (Blue/Green 배포)
 # ==============================================================================
 
+resource "aws_codedeploy_app" "goorm_ecommerce" {
+  compute_platform = "ECS"
+  name             = "goorm-ecommerce"
+}
+
 module "codedeploy_user" {
   source = "../../modules/codedeploy"
 
   project         = var.project
+  app_name        = aws_codedeploy_app.goorm_ecommerce.name
   environment     = var.environment
   service_name    = "user"
   ecs_cluster_name = module.ecs_cluster.cluster_name
   ecs_service_name = module.ecs_service_user.service_name
 
-  prod_listener_arns = [module.alb.alb_listener_arn, module.internal_alb.listener_arn]
+  prod_listener_arns = [module.alb.alb_listener_arn]
   test_listener_arn  = module.alb.test_listener_arn
 
   blue_target_group_name  = module.alb.target_group_names["user"]
@@ -462,12 +471,13 @@ module "codedeploy_product" {
   source = "../../modules/codedeploy"
 
   project         = var.project
+  app_name        = aws_codedeploy_app.goorm_ecommerce.name
   environment     = var.environment
   service_name    = "product"
   ecs_cluster_name = module.ecs_cluster.cluster_name
   ecs_service_name = module.ecs_service_product.service_name
 
-  prod_listener_arns = [module.alb.alb_listener_arn, module.internal_alb.listener_arn]
+  prod_listener_arns = [module.alb.alb_listener_arn]
   test_listener_arn  = module.alb.test_listener_arn
 
   blue_target_group_name  = module.alb.target_group_names["product"]
@@ -480,12 +490,13 @@ module "codedeploy_order" {
   source = "../../modules/codedeploy"
 
   project         = var.project
+  app_name        = aws_codedeploy_app.goorm_ecommerce.name
   environment     = var.environment
   service_name    = "order"
   ecs_cluster_name = module.ecs_cluster.cluster_name
   ecs_service_name = module.ecs_service_order.service_name
 
-  prod_listener_arns = [module.alb.alb_listener_arn, module.internal_alb.listener_arn]
+  prod_listener_arns = [module.alb.alb_listener_arn]
   test_listener_arn  = module.alb.test_listener_arn
 
   blue_target_group_name  = module.alb.target_group_names["order"]
@@ -498,12 +509,13 @@ module "codedeploy_payment" {
   source = "../../modules/codedeploy"
 
   project         = var.project
+  app_name        = aws_codedeploy_app.goorm_ecommerce.name
   environment     = var.environment
   service_name    = "payment"
   ecs_cluster_name = module.ecs_cluster.cluster_name
   ecs_service_name = module.ecs_service_payment.service_name
 
-  prod_listener_arns = [module.alb.alb_listener_arn, module.internal_alb.listener_arn]
+  prod_listener_arns = [module.alb.alb_listener_arn]
   test_listener_arn  = module.alb.test_listener_arn
 
   blue_target_group_name  = module.alb.target_group_names["payment"]
@@ -516,12 +528,13 @@ module "codedeploy_cart" {
   source = "../../modules/codedeploy"
 
   project         = var.project
+  app_name        = aws_codedeploy_app.goorm_ecommerce.name
   environment     = var.environment
   service_name    = "cart"
   ecs_cluster_name = module.ecs_cluster.cluster_name
   ecs_service_name = module.ecs_service_cart.service_name
 
-  prod_listener_arns = [module.alb.alb_listener_arn, module.internal_alb.listener_arn]
+  prod_listener_arns = [module.alb.alb_listener_arn]
   test_listener_arn  = module.alb.test_listener_arn
 
   blue_target_group_name  = module.alb.target_group_names["cart"]
