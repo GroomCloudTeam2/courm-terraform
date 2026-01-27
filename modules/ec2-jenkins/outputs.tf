@@ -6,7 +6,7 @@ output "instance_id" {
 }
 
 output "public_ip" {
-  description = "젠킨스 접속용 Public IP (브라우저 접속 주소)"
+  description = "젠킨스 접속용 Public IP"
   value       = aws_instance.jenkins.public_ip
 }
 
@@ -16,6 +16,6 @@ output "private_ip" {
 }
 
 output "availability_zone" {
-  description = "실제로 배포된 가용영역 (a존인지 확인용)"
+  description = "실제로 배포된 가용영역"
   value       = aws_instance.jenkins.availability_zone
 }
