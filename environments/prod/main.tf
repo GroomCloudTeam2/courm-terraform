@@ -14,7 +14,7 @@ module "vpc" {
   data_subnets   = var.data_subnets
 }
 
-# 2. 보안 그룹 (Generic Module 개별 호출)
+# 2. 보안 그룹
 
 # (1) ALB Security Group
 module "sg_alb" {
@@ -48,7 +48,7 @@ module "alb" {
   source = "../../modules/alb"
 
   vpc_id         = module.vpc.vpc_id
-  public_subnets = module.vpc.public_subnets
+  public_subnets = module.vpc.public_subnet_ids
 
   security_group_ids = [module.sg_alb.security_group_id]
 }
@@ -161,7 +161,6 @@ module "sg_jenkins" {
 
   name        = "courm-sg-jenkins-${var.environment}"
   vpc_id      = module.vpc.vpc_id
-  description = "Jenkins Security Group"
 
   ingress_rules = [
     {
@@ -193,12 +192,12 @@ module "jenkins" {
   source = "../../modules/ec2-jenkins"
 
   name     = "courm-jenkins-${var.environment}"
-  ami_id = var.jenkins_ami_id      # variables.tf에 변수 추가 필요
-  instance_type = "t3.medium"             # 젠킨스는 t3.small 이상 권장
-  key_name = var.key_pair_name       # variables.tf에 변수 추가 필요
+  ami_id = var.jenkins_ami_id
+  instance_type = "t3.large"
+  key_name = var.key_pair_name
 
-  # 가용영역 A에 배치하기
-  subnet_id = module.vpc.mgmt_subnets[0]
+  # 가용영역 A에 배치
+  subnet_id = module.vpc.mgmt_subnet_ids[0]
 
   # Jenkins 전용 보안그룹 ID 연결
   security_group_ids = [module.sg_jenkins.security_group_id]
