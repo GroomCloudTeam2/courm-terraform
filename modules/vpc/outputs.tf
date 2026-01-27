@@ -37,7 +37,7 @@ output "data_subnet_ids" {
 # --- 기타 정보 ---
 
 output "nat_gateway_ip" {
-  value = aws_eip.nat[0].public_ip
+  value = aws_eip.nat.public_ip
   description = "NAT Gateway의 고정 공인 IP"
 }
 
