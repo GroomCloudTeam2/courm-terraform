@@ -1,4 +1,3 @@
-variable "project_name" {}
 variable "environment" {}
 
 variable "security_group_ids" {
