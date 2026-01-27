@@ -1,36 +1,29 @@
-# 환경 설정
+# --- 공통 ---
+# project_name = "courm"
 environment = "prod"
-vpc_cidr    = "10.0.0.0/16"
+region       = "ap-northeast-2"
 
-# 사용할 가용영역 (서울 리전 A, C존)
+# --- 네트워크 (Prod 환경) ---
+vpc_cidr     = "10.0.0.0/16"
 azs = ["ap-northeast-2a", "ap-northeast-2c"]
 
-# ==============================================================================
-# 서브넷 IP 할당
-# ==============================================================================
-
-public_subnets = ["10.0.0.0/24","10.0.1.0/24"]
-
-# --- Private 계열 ---
-
-# 10번대: App (ECS)
+public_subnets = ["10.0.0.0/24", "10.0.1.0/24"]
 app_subnets    = ["10.0.10.0/24", "10.0.11.0/24"]
-
-# 20번대: MQ (Kafka)
 mq_subnets     = ["10.0.20.0/24", "10.0.21.0/24"]
-
-# 30번대: Mgmt (Jenkins)
-mgmt_subnets   = ["10.0.30.0/24"]
-
-# 40번대: Data (RDS)
+mgmt_subnets   = ["10.0.30.0/24"] # A존 1개만 사용
 data_subnets   = ["10.0.40.0/24", "10.0.41.0/24"]
 
-# ==============================================================================
-# EC2 설정 값
-# ==============================================================================
+# --- EC2 Key Pair ---
+key_pair_name = "courm-prod-key"
 
-# 서울 리전(ap-northeast-2) Ubuntu 22.04
-jenkins_ami_id = "ami-010be25c3775061c9"
+# --- Jenkins ---
+jenkins_ami_id        = "ami-010be25c3775061c9" # Ubuntu 22.04
+jenkins_instance_type = "t3.large"
 
-# AWS EC2 콘솔 -> 키 페어에서 만든 이름
-key_pair_name  = "courm-prod-key"
+# --- Kafka ---
+kafka_ami_id        = "ami-010be25c3775061c9" # Ubuntu 22.04
+kafka_instance_type = "t3.medium"
+
+# --- Database ---
+db_username = "courm-admin"
+db_password = "corumadmin1234!"

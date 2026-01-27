@@ -1,28 +1,22 @@
-# 1. 최종 사용자 접속용 URL (API Gateway)
-output "api_gateway_endpoint" {
-  description = "최종 API 접속 주소 (여기로 요청을 보내세요)"
+output "api_gateway_url" {
+  description = "최종 접속 URL"
   value       = module.api_gateway.api_endpoint
 }
 
-# 2. 디버깅용 ALB 주소
-output "alb_dns_name" {
-  description = "ALB의 DNS 주소"
-  value       = module.alb.alb_dns_name
+output "jenkins_url" {
+  description = "젠킨스 접속 URL"
+  value       = "http://${module.jenkins.public_ip}:8080"
 }
 
-# 3. VPC ID 확인
-output "vpc_id" {
-  description = "생성된 VPC ID"
-  value       = module.vpc.vpc_id
-}
-
-# 젠킨스 접속 정보
-output "jenkins_info" {
-  description = "젠킨스 접속 정보 모음"
+output "rds_endpoints" {
+  description = "DB 접속 주소"
   value = {
-    # 모듈에서 public_ip를 내보내고 있어야 함
-    url         = "http://${module.jenkins.public_ip}:8080"
-    instance_id = module.jenkins.instance_id
-    private_ip  = module.jenkins.private_ip
+    product_master = module.rds_product.rds_endpoint
+    order_master   = module.rds_order.rds_endpoint
   }
+}
+
+output "redis_endpoint" {
+  description = "Redis 엔드포인트"
+  value       = module.elasticache_redis.primary_endpoint
 }
