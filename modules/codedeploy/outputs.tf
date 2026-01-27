@@ -1,6 +1,6 @@
 output "app_name" {
   description = "CodeDeploy Application name"
-  value       = aws_codedeploy_app.this.name
+  value       = var.app_name
 }
 
 output "deployment_group_name" {

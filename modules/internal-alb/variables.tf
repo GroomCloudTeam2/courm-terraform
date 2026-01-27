@@ -23,8 +23,3 @@ variable "service_names" {
   type        = list(string)
   default     = ["user", "product", "order", "payment", "cart"]
 }
-
-variable "default_target_group_arn" {
-  description = "기본 라우팅 Target Group ARN"
-  type        = string
-}

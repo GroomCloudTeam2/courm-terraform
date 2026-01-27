@@ -3,6 +3,11 @@ variable "project" {
   type        = string
 }
 
+variable "app_name" {
+  description = "CodeDeploy Application Name"
+  type        = string
+}
+
 variable "environment" {
   description = "Environment (dev, staging, prod)"
   type        = string

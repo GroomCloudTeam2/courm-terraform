@@ -23,7 +23,7 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = var.default_target_group_arn
+    target_group_arn = aws_lb_target_group.services["user"].arn
   }
 }
 
@@ -45,13 +45,17 @@ resource "aws_lb_target_group" "services" {
   for_each = local.routing_rules
 
   name        = "${var.name}-${each.key}-tg"
-  port        = 80
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = var.vpc_id
 
   health_check {
     path = "/health"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
