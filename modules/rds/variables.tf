@@ -19,7 +19,7 @@ variable "engine" {
 variable "engine_version" {
   description = "데이터베이스 엔진 버전"
   type        = string
-  default     = "15.4"
+  default     = "15"
 }
 
 variable "instance_class" {
@@ -48,7 +48,7 @@ variable "db_name" {
 variable "username" {
   description = "마스터 사용자 이름"
   type        = string
-  default     = "admin"
+  default     = "courm_admin"
 }
 
 variable "password" {
