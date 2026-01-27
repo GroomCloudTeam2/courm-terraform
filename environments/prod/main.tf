@@ -68,14 +68,6 @@ module "internal_alb" {
   security_group_ids = [module.sg_internal_alb.security_group_id]
 
   default_target_group_arn = module.alb.target_group_arns["user"]
-
-  service_target_groups = {
-    user    = module.alb.target_group_arns["user"]
-    product = module.alb.target_group_arns["product"]
-    order   = module.alb.target_group_arns["order"]
-    payment = module.alb.target_group_arns["payment"]
-    cart    = module.alb.target_group_arns["cart"]
-  }
 }
 
 # 4. API Gateway 모듈
@@ -323,6 +315,7 @@ module "ecs_service_user" {
   # Load Balancer
   target_group_arn       = module.alb.target_group_arns["user"]
   green_target_group_arn = module.alb.target_group_arns_green["user"]
+  internal_target_group_arn = module.internal_alb.target_group_arns["user"]
 
   # Container
   container_image   = "${data.aws_ecr_repository.user.repository_url}:${local.image_tag}" # TODO: 실제 ECR 주소로 변경 필요
@@ -353,6 +346,7 @@ module "ecs_service_product" {
   security_group_id = module.sg_ecs.security_group_id
   target_group_arn       = module.alb.target_group_arns["product"]
   green_target_group_arn = module.alb.target_group_arns_green["product"]
+  internal_target_group_arn = module.internal_alb.target_group_arns["product"]
 
   container_image   = "${data.aws_ecr_repository.product.repository_url}:${local.image_tag}"
   container_port    = 8080
@@ -378,6 +372,7 @@ module "ecs_service_order" {
   security_group_id = module.sg_ecs.security_group_id
   target_group_arn       = module.alb.target_group_arns["order"]
   green_target_group_arn = module.alb.target_group_arns_green["order"]
+  internal_target_group_arn = module.internal_alb.target_group_arns["order"]
 
   container_image   = "${data.aws_ecr_repository.order.repository_url}:${local.image_tag}"
   container_port    = 8080
@@ -403,6 +398,7 @@ module "ecs_service_payment" {
   security_group_id = module.sg_ecs.security_group_id
   target_group_arn       = module.alb.target_group_arns["payment"]
   green_target_group_arn = module.alb.target_group_arns_green["payment"]
+  internal_target_group_arn = module.internal_alb.target_group_arns["payment"]
 
   container_image   = "${data.aws_ecr_repository.payment.repository_url}:${local.image_tag}"
   container_port    = 8080
@@ -428,6 +424,7 @@ module "ecs_service_cart" {
   security_group_id = module.sg_ecs.security_group_id
   target_group_arn       = module.alb.target_group_arns["cart"]
   green_target_group_arn = module.alb.target_group_arns_green["cart"]
+  internal_target_group_arn = module.internal_alb.target_group_arns["cart"]
 
   container_image   = "${data.aws_ecr_repository.cart.repository_url}:${local.image_tag}"
   container_port    = 8080
