@@ -17,3 +17,11 @@ variable "key_pair_name" {
   description = "EC2 접속에 사용할 SSH 키페어 이름"
   type        = string
 }
+
+# RDS 변수
+variable "rds_username" {
+  description = "RDS 마스터 사용자 이름"
+  type        = string
+  default     = "admin"
+}
+
