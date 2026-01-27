@@ -1,6 +1,7 @@
-# courm-terraform/main.tf
 
-# 1. VPC 모듈 호출
+# environments/prod/main.tf
+
+# 1. VPC
 module "vpc" {
   source = "../../modules/vpc"
 
@@ -14,20 +15,22 @@ module "vpc" {
   data_subnets   = var.data_subnets
 }
 
-# 2. 보안 그룹 모듈 호출
+# 2. 보안 그룹 (Generic Module 개별 호출)
+
+# (1) ALB Security Group
 module "sg_alb" {
   source = "../../modules/security-groups"
 
   name   = "courm-sg-alb-${var.environment}"
   vpc_id = module.vpc.vpc_id
-  description = "ALB Security Group"
-
+  
   ingress_rules = [
     {
       from_port   = 80
       to_port     = 80
       protocol    = "tcp"
       cidr_blocks = ["0.0.0.0/0"]
+
     }
   ]
 
@@ -40,6 +43,7 @@ module "sg_alb" {
     }
   ]
 }
+
 
 # 3. ALB 모듈
 module "alb" {
@@ -55,4 +59,100 @@ module "alb" {
 module "api_gateway" {
   source = "../../modules/api-gateway"
   alb_dns_name = module.alb.alb_dns_name
+}
+
+# (2) ECS Security Group (ALB에서의 접근만 허용)
+module "sg_ecs" {
+  source = "../../modules/security-groups"
+
+  name   = "courm-sg-ecs-${var.environment}"
+  vpc_id = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      from_port       = 8080
+      to_port         = 8080
+      protocol        = "tcp"
+      security_groups = [module.sg_alb.security_group_id] # 체이닝
+    }
+  ]
+}
+
+# (3) RDS Security Group (ECS에서의 접근만 허용)
+module "sg_rds" {
+  source = "../../modules/security-groups"
+
+  name   = "courm-sg-rds-${var.environment}"
+  vpc_id = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      from_port       = 5432
+      to_port         = 5432
+      protocol        = "tcp"
+      security_groups = [module.sg_ecs.security_group_id] # 체이닝
+    }
+  ]
+}
+
+# (4) Redis Security Group (ECS에서의 접근만 허용)
+module "sg_redis" {
+  source = "../../modules/security-groups"
+
+  name   = "courm-sg-redis-${var.environment}"
+  vpc_id = module.vpc.vpc_id
+
+  ingress_rules = [
+    {
+      from_port       = 6379
+      to_port         = 6379
+      protocol        = "tcp"
+      security_groups = [module.sg_ecs.security_group_id] # 체이닝
+    }
+  ]
+}
+
+# 3. RDS
+module "rds_order" {
+  source = "../../modules/rds"
+
+  identifier         = "courm-rds-order-${var.environment}"
+  environment        = var.environment
+  db_name            = "courm_order"
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = module.vpc.data_subnet_ids
+  security_group_ids = [module.sg_rds.security_group_id] # 변경된 SG ID 연결
+
+  tags = { Service = "order-payment-user" }
+}
+
+module "rds_product" {
+  source = "../../modules/rds"
+
+  identifier         = "courm-rds-product-${var.environment}"
+  environment        = var.environment
+  db_name            = "courm_product"
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = module.vpc.data_subnet_ids
+  security_group_ids = [module.sg_rds.security_group_id] # 변경된 SG ID 연결
+
+  # 기본값과 다른 설정만 오버라이드
+  backup_retention_period = 3
+  create_read_replica     = true
+
+  tags = { Service = "product-review" }
+}
+
+# 4. ElastiCache (Redis)
+module "elasticache_redis" {
+  source = "../../modules/elasticache"
+
+  cluster_id         = "courm-redis-${var.environment}"
+  environment        = var.environment
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = module.vpc.data_subnet_ids
+  security_group_ids = [module.sg_redis.security_group_id]
+  # auth_token 자동 생성 (Secrets Manager 사용)
+
+  tags = { Service = "product-cache-cart-lock" }
 }
