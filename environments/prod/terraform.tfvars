@@ -30,8 +30,8 @@ data_subnets   = ["10.0.40.0/24", "10.0.41.0/24"]
 # EC2 설정 값
 # ==============================================================================
 
-# 서울 리전(ap-northeast-2) Ubuntu 22.04 LTS (2024년 기준 예시)
-jenkins_ami_id = "ami-0c9c942bd7bf113a2"
+# 서울 리전(ap-northeast-2) Ubuntu 22.04
+jenkins_ami_id = "ami-010be25c3775061c9"
 
 # AWS EC2 콘솔 -> 키 페어에서 만든 이름
 key_pair_name  = "courm-prod-key"
