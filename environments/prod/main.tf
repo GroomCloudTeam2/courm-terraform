@@ -82,7 +82,7 @@ data "aws_ecr_repository" "payment" { name = "goorm-payment" }
 data "aws_ecr_repository" "cart" { name = "goorm-cart" }
 
 locals {
-  image_tag = "10-78435b3f"
+  image_tag = "11-f11e1f72"
 
   # 서비스 간 통신용 Internal ALB DNS (Path 기반 라우팅)
   internal_alb_dns = module.internal_alb.dns_name

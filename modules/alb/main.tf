@@ -196,6 +196,87 @@
     }
   }
 
+  # 테스트 리스너 규칙 (Green 타겟 그룹 연결)
+  resource "aws_lb_listener_rule" "user_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 10
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.user_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/users*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "product_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 20
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.product_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/products*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "order_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 30
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.order_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/orders*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "payment_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 40
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.payment_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/payments*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "cart_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 50
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.cart_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/carts*"]
+      }
+    }
+  }
+
   # -----------------------------------------------------------
   # 4. 리스너 및 규칙 (교통 정리)
   # -----------------------------------------------------------
