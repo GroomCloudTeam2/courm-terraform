@@ -95,26 +95,22 @@
 
   # NAT Gateway 하나 필요
   resource "aws_eip" "nat" {
-    # Public Subnet 개수만큼 EIP 생성
-    count  = length(var.public_subnets)
     domain = "vpc"
 
     tags = {
-      Name = "courm-eip-${var.azs[count.index]}"
+      Name = "courm-eip-nat-a"
     }
   }
 
-  resource "aws_nat_gateway" "this" {
-    count = length(var.public_subnets)
-    allocation_id = aws_eip.nat[count.index].id # 위에서 만든 EIP를 연결
-
-    subnet_id = aws_subnet.public[count.index].id # 첫번째 Public Subnet에 위치
+  resource "aws_nat_gateway" "nat" {
+    allocation_id = aws_eip.nat.id # 위에서 만든 EIP를 연결
+    subnet_id = aws_subnet.public[0].id # 첫번째 Public Subnet에 위치
 
     tags = {
-      Name = "courm-nat-${var.azs[count.index]}"
+      Name = "courm-nat-gateway-a"
     }
 
-    # IGW가 생성되기 전에 NAT를 만들면 에러가 날 수 있어 순서 강제
+    # IGW가 생성되어야 통신 가능
     depends_on = [aws_internet_gateway.this]
   }
 
@@ -139,7 +135,7 @@
 
     route {
       cidr_block     = "0.0.0.0/0"
-      nat_gateway_id = aws_nat_gateway.this[count.index].id # 각자 맞는 NAT 연결
+      nat_gateway_id = aws_nat_gateway.nat.id # 각자 맞는 NAT 연결
     }
 
     tags = {

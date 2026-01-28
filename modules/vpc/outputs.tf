@@ -20,6 +20,10 @@ output "mq_subnet_ids" {
   description = "MQ Subnet IDs"
 }
 
+output "mq_subnet_cidrs" {
+  value = aws_subnet.mq[*].cidr_block
+}
+
 output "mgmt_subnet_ids" {
   value = aws_subnet.mgmt[*].id
   description = "Mgmt Subnet IDs"
