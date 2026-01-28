@@ -571,3 +571,16 @@ module "codedeploy_cart" {
   codedeploy_role_arn = module.ecs_cluster.codedeploy_role_arn
 }
 
+
+# ==============================================================================
+# 8. GuardDuty
+# ==============================================================================
+
+resource "aws_guardduty_detector" "my_detector" {
+  enable = true
+
+  # 30일 무료 기간 확인용 태그
+  tags = {
+    Name = "My-GuardDuty"
+  }
+}
