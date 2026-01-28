@@ -1,8 +1,10 @@
-# --- 공통 설정 ---
-#variable "project_name" {
-#  description = "프로젝트 이름 (예: courm)"
-#  type        = string
-#}
+# courm-terraform/variables.tf
+
+variable "project" {
+  description = "Project name"
+  type        = string
+  default     = "courm"
+}
 
 variable "environment" {
   description = "환경 이름 (예: prod)"

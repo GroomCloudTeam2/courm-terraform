@@ -1,7 +1,4 @@
-  # 1. ALB 전용 보안 그룹
-
-
-  # 2. 로드밸런서 (ALB) 생성
+# 1. ALB 전용 보안 그룹
   resource "aws_lb" "main" {
     name               = "courm-alb"
     internal           = false
@@ -21,7 +18,7 @@
   # (1) User 서비스용 타겟 그룹
   resource "aws_lb_target_group" "user" {
     name        = "courm-user-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     target_type = "ip" # ECS Fargate를 쓸 경우 ip로 설정해야 함
     vpc_id      = var.vpc_id
@@ -29,38 +26,50 @@
     health_check {
       path = "/health" # 혹은 "/"
     }
+
+    lifecycle {
+      create_before_destroy = true
+    }
   }
 
   # (2) Product 서비스용 타겟 그룹
   resource "aws_lb_target_group" "product" {
     name        = "courm-product-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     target_type = "ip"
     vpc_id      = var.vpc_id
 
     health_check {
       path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
     }
   }
 
   # (3) Order 서비스용 타겟 그룹
   resource "aws_lb_target_group" "order" {
     name        = "courm-order-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     target_type = "ip"
     vpc_id      = var.vpc_id
 
     health_check {
       path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
     }
   }
 
   # (4) Payment 서비스용 타겟 그룹
   resource "aws_lb_target_group" "payment" {
     name        = "courm-payment-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     target_type = "ip"
     vpc_id      = var.vpc_id
@@ -68,16 +77,204 @@
     health_check {
       path = "/health"
     }
+
+    lifecycle {
+      create_before_destroy = true
+    }
   }
 
   # (5) Cart 서비스용 타겟 그룹
   resource "aws_lb_target_group" "cart" {
     name        = "courm-cart-tg"
-    port        = 80
+    port        = 8080
     protocol    = "HTTP"
     target_type = "ip"
     vpc_id      = var.vpc_id
     health_check { path = "/health" }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  # -----------------------------------------------------------
+  # 3-2. Green 타겟 그룹 (Blue/Green 배포용)
+  # -----------------------------------------------------------
+
+  resource "aws_lb_target_group" "user_green" {
+    name        = "courm-user-tg-green"
+    port        = 8080
+    protocol    = "HTTP"
+    target_type = "ip"
+    vpc_id      = var.vpc_id
+
+    health_check {
+      path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  resource "aws_lb_target_group" "product_green" {
+    name        = "courm-product-tg-green"
+    port        = 8080
+    protocol    = "HTTP"
+    target_type = "ip"
+    vpc_id      = var.vpc_id
+
+    health_check {
+      path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  resource "aws_lb_target_group" "order_green" {
+    name        = "courm-order-tg-green"
+    port        = 8080
+    protocol    = "HTTP"
+    target_type = "ip"
+    vpc_id      = var.vpc_id
+
+    health_check {
+      path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  resource "aws_lb_target_group" "payment_green" {
+    name        = "courm-payment-tg-green"
+    port        = 8080
+    protocol    = "HTTP"
+    target_type = "ip"
+    vpc_id      = var.vpc_id
+
+    health_check {
+      path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  resource "aws_lb_target_group" "cart_green" {
+    name        = "courm-cart-tg-green"
+    port        = 8080
+    protocol    = "HTTP"
+    target_type = "ip"
+    vpc_id      = var.vpc_id
+
+    health_check {
+      path = "/health"
+    }
+
+    lifecycle {
+      create_before_destroy = true
+    }
+  }
+
+  # -----------------------------------------------------------
+  # 3-3. 테스트 리스너 (Green 환경 검증용, port 8080)
+  # -----------------------------------------------------------
+
+  resource "aws_lb_listener" "test" {
+    load_balancer_arn = aws_lb.main.arn
+    port              = 8080
+    protocol          = "HTTP"
+
+    default_action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.user_green.arn
+    }
+  }
+
+  # 테스트 리스너 규칙 (Green 타겟 그룹 연결)
+  resource "aws_lb_listener_rule" "user_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 10
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.user_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/users*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "product_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 20
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.product_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/products*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "order_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 30
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.order_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/orders*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "payment_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 40
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.payment_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/payments*"]
+      }
+    }
+  }
+
+  resource "aws_lb_listener_rule" "cart_green" {
+    listener_arn = aws_lb_listener.test.arn
+    priority     = 50
+
+    action {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.cart_green.arn
+    }
+
+    condition {
+      path_pattern {
+        values = ["/carts*"]
+      }
+    }
   }
 
   # -----------------------------------------------------------
@@ -176,4 +373,3 @@
       path_pattern { values = ["/carts*"] }
     }
   }
-

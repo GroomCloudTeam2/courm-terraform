@@ -14,6 +14,20 @@ output "rds_address" {
   description = "RDS 주소"
   value       = aws_db_instance.master.address
 }
+output "replica_endpoint" {
+
+  description = "Read Replica 연결 엔드포인트"
+
+  value       = try(aws_db_instance.replica[0].endpoint, null)
+
+}
+output "replica_address" {
+
+  description = "Read Replica 주소"
+
+  value       = try(aws_db_instance.replica[0].address, null)
+
+}
 
 output "rds_port" {
   description = "RDS 포트"
