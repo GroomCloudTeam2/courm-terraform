@@ -44,15 +44,6 @@ module "sg_alb" {
   ]
 }
 
-# 3. ALB 모듈
-module "alb" {
-  source = "../../modules/alb"
-
-  vpc_id         = module.vpc.vpc_id
-  public_subnets = module.vpc.public_subnet_ids
-
-  security_group_ids = [module.sg_alb.security_group_id]
-}
 
 # 3-2. Internal ALB (서비스 간 통신용, VPC 내부 전용)
 module "internal_alb" {
@@ -64,11 +55,6 @@ module "internal_alb" {
   security_group_ids = [module.sg_internal_alb.security_group_id]
 }
 
-# 4. API Gateway 모듈
-module "api_gateway" {
-  source = "../../modules/api-gateway"
-  alb_dns_name = module.alb.alb_dns_name
-}
 
 # 5. ECR Data Sources (콘솔에서 생성된 레포지토리 정보 가져오기)
 data "aws_ecr_repository" "user" { name = "goorm-user" }
