@@ -1,5 +1,5 @@
-# --- 공통 ---
-# project_name = "courm"
+# 환경 설정
+project     = "courm"
 environment = "prod"
 region       = "ap-northeast-2"
 
