@@ -9,4 +9,3 @@ variable "repository_names" {
     "goorm-order"
   ]
 }
- 
